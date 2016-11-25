@@ -25,7 +25,7 @@ maps NFW errors to Einasto parameter errors
 ----------------------------
 TUTORIAL
 
-Open fisher_matrix.py to specify the number of clusters and redshift range (see redshift_array) used to generate 2D contours for a given cosmological case. Run to generate 2d contours of whatever cosmological case you specify. Read in-code documentation and see Stark et al 2016 to see the various cases.
+Open fisher_matrix.py to specify the number of clusters and redshift range (see redshift_array) used to generate 2D contours for a given cosmological case. Run to generate 2d contours of whatever cosmological case you specify. Read in-code documentation and see Stark et al 2016 (https://arxiv.org/abs/1611.06886) to see the various cases.
 
 ----------------------------
 LIBRARIES 
