@@ -1,5 +1,5 @@
 # phase_space_cosmo_fisher
-Codes used to produce Fisher matrix 2D contours found in Stark, Miller Huterer 2016.
+Codes used to produce Fisher matrix 2D contours found in Stark, Miller Huterer 2016 https://arxiv.org/abs/1611.06886 (v2)
 
 ----------------------------
 MAIN codes
@@ -11,7 +11,7 @@ This is the main code which calculates the fisher matrix and generates 2d margin
 Functions such as the escape velocity profile and cosmological quantities used by fisher_matrix.py are housed here.
 
 *paper_figures.py *
-Functions to generate the exact plots found in the Stark, Miller, Huterer 2016 paper are stored here.
+Functions to generate the specific figures found in  Stark, Miller, Huterer 2016 paper (v2) are stored here.
 
 ----------------------------
 OTHER codes
@@ -25,11 +25,11 @@ maps NFW errors to Einasto parameter errors
 ----------------------------
 TUTORIAL
 
-Open fisher_matrix.py to specify the number of clusters and redshift range (see redshift_array) used to generate 2D contours for a given cosmological case. Run to generate 2d contours of whatever cosmological case you specify. Read in-code documentation and see Stark et al 2016 (https://arxiv.org/abs/1611.06886) to see the various cases.
+Open fisher_matrix.py and specify the number of clusters and redshift range (see 'sample_redshift_array' and 'sample_number_of_clusters') used to generate 2D contours for a given cosmological case. Then specify which of the three parameter cases you want to constraint via 'user_input_case' (pick either 'flat', 'w_z', or 'non_flat' -- see code). Run fisher_matrix to generate 2d contours of whatever cosmological case you specify. You can also read in-code documentation and Stark et al 2016 (https://arxiv.org/abs/1611.06886 v2) for more detals.
 
 ----------------------------
 LIBRARIES 
-you will need cosmolopy, astropy and sympy
+You will need cosmolopy, astropy and sympy.
 
 ----------------------------
-If you have any questions email the author: alejo@umich.edu
+If you have any questions you can email the author: alejo@umich.edu
