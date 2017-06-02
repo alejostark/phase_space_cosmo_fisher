@@ -50,18 +50,12 @@ the values going into the prior matrix. You can re-calculate these for any mass 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-PARAMETER specifications: pick integer number of clusters and redshift range
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-sample_number_of_clusters = 100
-sample_redshift_array = np.linspace(0.001 , 0.8, sample_number_of_clusters).round(5) # 0.00001 <= z_c <= 0.8 is range optimized
-
-radius_array = np.linspace(0.5,2.5,14).round(3) #specify radius array for profiles. used in v_esc(r) funcs below.
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 FIDUCIAL VALUES to evaluate Fisher matrix derivatives
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 #alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid
+
+radius_array = np.linspace(0.5,2.5,14).round(3) #specify radius array for profiles. used in v_esc(r) funcs below.
 
 """ equivalent to M200=4e14 at z=0; use einasto_error.py to map"""
 alpha_fid = 0.1984
@@ -1112,20 +1106,19 @@ def plot_derivatives_vary_w(z_c_array):
 """""""""""
 User input
 """""""""
-# sample_redshift_array = np.linspace(0.001 , 0.8, 100).round(5) 
-# user_input_z_array = input('Enter redshift array (NOTE: d_A does not allow z = 0!) : ')
 
-# print "Enter cosmology parameter case you\'d like to plot. Choices: \n (1) ENTER: 'flat' For flat universe omegaM-w contours  \n (2) ENTER: 'w_z' For flat universe evolving w(z) w0-wa contours  \n (3) ENTER: 'non_flat' For non-flat Lambda universe omegaM-omega_L contours "
+"""specify redhsift range and Nclus"""
+# N_clus = 30 #number of clusters
+# redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) 
 
-# user_input_case = str(input(" Enter case ('flat', 'w_z', etc): "))
+"""specify cluster parameter uncertainties"""
+# prior_case = '40pct_riess' #see cases in 'cluster_uncertainty_params' function
+# sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
 
-# print '\n Step 1: Making matrix... \n '
-
-# G_matrix_user_input = make_G_matrix(user_input_z_array, user_input_case,sigma_squared_list,cluster_edge_unc)
-
-# print '\n Step 2: plotting contours... \n'
-
-# plot_2d_contours_from_G(G_matrix_user_input,user_input_case)
+"""calculate uncertainties"""
+# cosmo_case = 'flat' #w_z, non_flat, flat
+# G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
+# plot_2d_contours_from_G(G_matrix_user_input,cosmo_case)
 
 
 
