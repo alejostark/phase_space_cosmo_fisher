@@ -10,7 +10,7 @@ This is the main code which calculates the fisher matrix and generates 2d margin
 *functions_fisher.py* 
 Functions such as the escape velocity profile and cosmological quantities used by fisher_matrix.py are housed here.
 
-*paper_figures.py *
+*paper_figures.py*
 Functions to generate the specific figures found in  Stark, Miller, Huterer 2017 paper are stored here.
 
 ----------------------------
