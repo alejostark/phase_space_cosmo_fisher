@@ -5,7 +5,7 @@ import matplotlib.patches as mpatches
 from matplotlib.legend_handler import HandlerPatch
 
 
-"""produce figures in paper"""
+"""Contains functions to produce most figures of Stark et al 2017"""
 
 #levels for contour plots
 f_1sig = 0.434 #68% CL ellipse
@@ -24,31 +24,16 @@ class HandlerEllipse(HandlerPatch):
 
 """ contours """
 def plot_fig5_flat(plot):
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared =  (0.5)**2.  
-
-	####40% mass error#####
-	sigma_r2_squared = (0.074)**2.
-	sigma_rho2_squared = (11.218e12/1e14)**2.
-	sigma_alpha_squared = (0.002)**2.
-
-	######20% mass error######
-	sigma_r2_squared_20 = (0.035)**2.
-	sigma_rho2_squared_20 = (6.576e12/1e14)**2.
-	sigma_alpha_squared_20 = (0.001)**2. 
-
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
-	sigma_squared_list_20 = [sigma_beta_squared, sigma_alpha_squared_20, sigma_r2_squared_20, sigma_rho2_squared_20]
-
-	cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
+	#use 40% stat uncertainty with no cosmological parmaters fixed (61% unc. on M200)
+	sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
 
 	#make G matrix
-	G_flat_100= make_G_matrix(np.linspace(0.0001 , 0.8, 100).round(5), 'flat',sigma_squared_list,cluster_edge_unc)
-	G_flat_1000 = make_G_matrix(np.linspace(0.0001 , 0.8, 1000).round(5), 'flat',sigma_squared_list,cluster_edge_unc)
+	G_flat_100= make_G_matrix(np.linspace(0.001 , 0.8, 100).round(5), 'flat',sigma_squared_list, cluster_edge_unc)
+	G_flat_1000 = make_G_matrix(np.linspace(0.001 , 0.8, 1000).round(5), 'flat',sigma_squared_list, cluster_edge_unc)
 
 	print 'plotting..'
-	omega_M_array = np.arange(-1,1.,1e-3)
-	w_array = np.arange(-5,2, 1e-3)
+	omega_M_array = np.arange(-1,1.,3e-3)
+	w_array = np.arange(-5,2, 8e-3)
 
 	x, y = coord(omega_M_array, w_array)# return coordinate matrices from coordinate vectors
 	
@@ -60,8 +45,7 @@ def plot_fig5_flat(plot):
 	plt.contourf(x+0.3, y-1., z1,  [1/f_2sig,1/f_1sig] , colors='black') #marginalized
 	plt.contourf(x+0.3, y-1., z1,  [1/f_1sig,1/f_2sig] , colors='gray') #marginalized
 
-	proxy1 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="black",
-            edgecolor="gray", linewidth=3)
+	proxy1 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="black", edgecolor="gray", linewidth=3)
 
 	print 'making ellipse 2..'
 
@@ -71,48 +55,32 @@ def plot_fig5_flat(plot):
 	plt.contourf(x+0.3, y-1., z2,  [1/f_2sig, 1/f_1sig] , colors='firebrick') #marginalized
 	plt.contourf(x+0.3, y-1., z2, [1/f_1sig,1/f_2sig] , colors='red') #marginalized
 
-	proxy2 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="firebrick",
-            edgecolor="red", linewidth=3)
+	proxy2 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="firebrick",edgecolor="red", linewidth=3)
 
 	### plot legend 
-	plt.legend([proxy1,proxy2], ['$N_{clus}= 100$' ,'$N_{clus}= 1000$' ],
-       handler_map={mpatches.Circle: HandlerEllipse()},frameon=False)
+	plt.legend([proxy1,proxy2], ['$N_{clus}= 100$' ,'$N_{clus}= 1000$' ],handler_map={mpatches.Circle: HandlerEllipse()},frameon=False)
 
 
 	plt.xlabel('$\Omega_M$',fontsize=20)
 	plt.ylabel('$w$',fontsize=20)
 
-	plt.xlim(.26,.34)
+	plt.xlim(.1,.5)
 	plt.ylim(-3,1)
 
 	plt.show()
 	
 def plot_fig6_w_z(plot):
 
-	reds_array= np.linspace(0.0001 , 0.8, 100).round(5)
+	reds_array= np.linspace(0.001 , 0.8, 100).round(5)
 
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared =  (0.5)**2.  
+	sigma_squared_list_40_none , cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
+	sigma_squared_list_20_none , cluster_edge_unc = cluster_uncertainty_params('20pct_none') 
+	sigma_squared_list_40_riess , cluster_edge_unc = cluster_uncertainty_params('40pct_riess') 
 
-	####40% mass error#####
-	sigma_r2_squared = (0.074)**2.
-	sigma_rho2_squared = (11.218e12/1e14)**2.
-	sigma_alpha_squared = (0.002)**2.
-
-	######20% mass error######
-	sigma_r2_squared_20 = (0.035)**2.
-	sigma_rho2_squared_20 = (6.576e12/1e14)**2.
-	sigma_alpha_squared_20 = (0.001)**2. 
-
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
-	sigma_squared_list_20 = [sigma_beta_squared, sigma_alpha_squared_20, sigma_r2_squared_20, sigma_rho2_squared_20]
-
-	cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
-
-	###
-	G_wz_40 = make_G_matrix(reds_array, 'w_z',sigma_squared_list,cluster_edge_unc)
-	G_wz_20 = make_G_matrix(reds_array, 'w_z',sigma_squared_list_20,cluster_edge_unc)
-	G_wz_riess_prior =  make_G_matrix(reds_array, 'w_z_riess16_h',sigma_squared_list_20,cluster_edge_unc)
+	### Make G matrix ### 
+	G_wz_40 = make_G_matrix(reds_array, 'w_z',sigma_squared_list_40_none,cluster_edge_unc)
+	G_wz_20 = make_G_matrix(reds_array, 'w_z',sigma_squared_list_20_none,cluster_edge_unc)
+	G_wz_riess_prior =  make_G_matrix(reds_array, 'w_z_riess16_h',sigma_squared_list_40_riess,cluster_edge_unc)
 
 	#marginalize over omegaM,h and other parameters to get w0-wa plane
 	w0_array = np.arange(-5,2, 1e-2)
@@ -129,8 +97,7 @@ def plot_fig6_w_z(plot):
 	plt.contourf(x-1., y+0., z_40,  [1/f_2sig,1/f_1sig] , colors='lightseagreen') #marginalized
 	plt.contourf(x-1., y+0., z_40,  [1/f_1sig,1/f_2sig] , colors='turquoise') #marginalized
 
-	proxy1 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="lightseagreen",
-            edgecolor="turquoise", linewidth=3)
+	proxy1 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="lightseagreen",edgecolor="turquoise", linewidth=3)
 
 	####################
 	## ellipse 2: 20%
@@ -141,8 +108,7 @@ def plot_fig6_w_z(plot):
 	plt.contourf(x-1., y+0., z_20,  [1/f_2sig,1/f_1sig] , colors='darkslateblue') #marginalized
 	plt.contourf(x-1., y+0., z_20,  [1/f_1sig,1/f_2sig] , colors='mediumslateblue') #marginalized
 
-	proxy2 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="darkslateblue",
-            edgecolor="mediumslateblue", linewidth=3)
+	proxy2 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="darkslateblue", edgecolor="mediumslateblue", linewidth=3)
 
 	####################
 	#ellipse 3: 
@@ -153,39 +119,34 @@ def plot_fig6_w_z(plot):
 	plt.contourf(x-1., y+0., z_riess_prior,  [1/f_2sig,1/f_1sig] , colors='crimson') #marginalized
 	plt.contourf(x-1., y+0., z_riess_prior,  [1/f_1sig,1/f_2sig] , colors='pink') #marginalized
 
-	proxy3 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="crimson",
-            edgecolor="pink", linewidth=3)
+	proxy3 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="crimson",edgecolor="pink", linewidth=3)
 
 	####################
-	plt.legend([proxy1 , proxy2, proxy3], [r'$40\%$ mass scatter' , r'$20\%$ mass scatter',r'$20\%$ mass scatter + Riess et al 2016 $h$ prior'],
+	plt.legend([ proxy3, proxy2, proxy1], [r'$40\%$ mass scatter w/ Riess et al 2016 $h$ prior', r'$40\%$ mass scatter',r'$80\%$ mass scatter' ],
       handler_map={mpatches.Circle: HandlerEllipse()},frameon=False,loc='upper left')
 
-	# plt.legend([proxy1 , proxy3], [r'$40\%$ mass scatter'  ,r'$20\%$ mass scatter and $7\%$ $\beta$ scatter'],handler_map={mpatches.Circle: HandlerEllipse()},frameon=False,loc='upper left')
 
 	plt.xlabel('$w_0$',fontsize=20)
 	plt.ylabel('$w_a$',fontsize=20)
 
-	plt.xlim(-3,1)
-	plt.ylim(-2,2)
+	# plt.xlim(-3,1)
+	# plt.ylim(-2,2)
 	plt.show()
 
+ 	plt.yticks(np.arange(-2,2.5,0.5))
+ 	plt.ylim(-2,2)
+	plt.xticks(np.arange(-3,1.5,0.5))
+	plt.xlim(-3,1)
+
 def plot_fig7_nonflat(plot):
+	reds_array= np.linspace(0.001,.8,100).round(3)
 
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared =  (0.5)**2.  
-
-	####40% mass error#####
-	sigma_r2_squared = (0.074)**2.
-	sigma_rho2_squared = (11.218e12/1e14)**2.
-	sigma_alpha_squared = (0.002)**2.
-
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
-
-	cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
+	sigma_squared_list_40_none , cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
+	sigma_squared_list_40_riess , cluster_edge_unc = cluster_uncertainty_params('40pct_riess') 
 
 	#make G matrix
-	G_nonflat = make_G_matrix(np.linspace(0.0001,.8,100).round(5),'non_flat',sigma_squared_list,cluster_edge_unc)
-	G_nonflat_riess = make_G_matrix(np.linspace(0.0001,.8,100).round(5),'non_flat_riess_prior',sigma_squared_list,cluster_edge_unc)
+	G_nonflat = make_G_matrix(reds_array,'non_flat',sigma_squared_list_40_none,cluster_edge_unc)
+	G_nonflat_riess = make_G_matrix(reds_array,'non_flat_riess_prior',sigma_squared_list_40_riess,cluster_edge_unc)
 
 	omega_M_array = np.arange(-1,2.,2e-3)
 	omega_DE_array = np.arange(-1,2,2e-3)
@@ -222,44 +183,11 @@ def plot_fig7_nonflat(plot):
 """other"""
 def plot_fig9_sigma_zmin(plot):
 
-	""
-	"stacked"
-	""
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared_stacked =  (0.02)**2. 
+	# read in uncertainties for stacked and unstacked cases #
+	sigma_squared_list_stacked , cluster_edge_unc_stacked = cluster_uncertainty_params('5pct_none') 
+	sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
+	sigma_squared_list_20, cluster_edge_unc = cluster_uncertainty_params('20pct_none') 
 
-	sigma_r2_squared_stacked = (0.01)**2.
-	sigma_rho2_squared_stacked = (1.635e12/1e14)**2.
-	sigma_alpha_squared_stacked = (-0.0001)**2. 
-
-	sigma_squared_list_stacked = [sigma_beta_squared_stacked, sigma_alpha_squared_stacked, sigma_r2_squared_stacked, sigma_rho2_squared_stacked]
-
-	cluster_edge_unc_stacked = np.sqrt(50**2 + (1000 * 0.15/2)**2 )
-
-	""
-	"NON stacked"
-	""
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared =  (0.5)**2.
-
-	####40% mass error#####
-	sigma_r2_squared = (0.074)**2.
-	sigma_rho2_squared = (11.218e12/1e14)**2.
-	sigma_alpha_squared = (0.002)**2.
-
-	######20% mass error######
-	sigma_r2_squared_20 = (0.035)**2.
-	sigma_rho2_squared_20 = (6.576e12/1e14)**2.
-	sigma_alpha_squared_20 = (0.001)**2. 
-
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
-	sigma_squared_list_20 = [sigma_beta_squared, sigma_alpha_squared_20, sigma_r2_squared_20, sigma_rho2_squared_20]
-
-	cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
-
-	""
-	""
-	# z_min_array= np.linspace(0.01,.6,7)
 	z_min_array= np.linspace(0.001,.6,7)
 
 	sigma_oM_array = np.zeros_like(z_min_array)*0.
@@ -295,26 +223,15 @@ def plot_fig9_sigma_zmin(plot):
 
 
 	fig, ax = plt.subplots(2,1,sharex= True)
-	ax[0].plot(z_min_array,sigma_w_array,color='black',label='40% mass scatter',linewidth=2)	
-	ax[0].scatter(z_min_array,sigma_w_array,color='black')	
+	ax[0].plot(z_min_array,sigma_w_array,color='black',label='80% mass scatter',linewidth=2,ls='-')	
+	ax[0].plot(z_min_array,sigma_w_array_20,color='black',label='40% mass scatter',linewidth=2,ls='--')	
+	ax[0].plot(z_min_array,sigma_w_array_stacked,color='black',label='stacked',linewidth=2,ls=':')	
 
-	ax[0].plot(z_min_array,sigma_w_array_20,color='red',label='20% mass scatter',linewidth=2)	
-	ax[0].scatter(z_min_array,sigma_w_array_20,color='red')	
-
-	ax[0].plot(z_min_array,sigma_w_array_stacked,color='green',label='stacked',linewidth=2)	
-	ax[0].scatter(z_min_array,sigma_w_array_stacked,color='green')	
-
-
-	ax[1].plot(z_min_array,sigma_oM_array,color='black',linewidth=2)	
-	ax[1].scatter(z_min_array,sigma_oM_array,color='black')	
-
-	ax[1].plot(z_min_array,sigma_oM_array_20,color='red',linewidth=2)	
-	ax[1].scatter(z_min_array,sigma_oM_array_20,color='red')	
-
-	ax[1].plot(z_min_array,sigma_oM_array_stacked,color='green',linewidth=2)	
-	ax[1].scatter(z_min_array,sigma_oM_array_stacked,color='green')	
-
-	ax[0].set_xlim(-.05,.65)
+	ax[1].plot(z_min_array,sigma_oM_array,color='black',linewidth=2,ls='-')	
+	ax[1].plot(z_min_array,sigma_oM_array_20,color='black',linewidth=2,ls='--')	
+	ax[1].plot(z_min_array,sigma_oM_array_stacked,color='black',linewidth=2,ls=':')	
+	plt.xlim(0,.6)
+	ax[1].set_ylim(0,0.03)
 	plt.xlabel('$z_{min}$',fontsize=20)
 	ax[0].set_ylabel('$\sigma_w$',fontsize=25)
 	ax[1].set_ylabel('$\sigma_{\Omega_M}}$',fontsize=25)
@@ -325,51 +242,18 @@ def plot_fig9_sigma_zmin(plot):
 	plt.show()
 
 def plot_fig8_invArea_oM_w(plot):
-	##############################	
-	##############################	
-	##############################	
-	##############################	
-	##############################	
 
+	# read in uncertainties for stacked and unstacked cases #
+	sigma_squared_list_5_beta , cluster_edge_unc_stacked = cluster_uncertainty_params('5pct_none') 
+	sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
+	sigma_squared_list_20, cluster_edge_unc = cluster_uncertainty_params('20pct_none') 
 
-	######STACKED ######
-	sigma_beta_squared_stacked =  (0.02)**2. 
-	cluster_edge_unc_stacked = np.sqrt(50**2 + (1000 * 0.15/2)**2 )
-
-	sigma_r2_squared_stacked = (0.01)**2.
-	sigma_rho2_squared_stacked = (1.635e12/1e14)**2.
-	sigma_alpha_squared_stacked = (0.0001)**2. 
-	sigma_squared_list_5_beta = [sigma_beta_squared_stacked, sigma_alpha_squared_stacked, sigma_r2_squared_stacked, sigma_rho2_squared_stacked]
-
-	######UNSTACKED######
-	sigma_beta_squared =  (0.5)**2.  
-	cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
-
-	#20% mass error#
-	sigma_r2_squared_20 = (0.035)**2.
-	sigma_rho2_squared_20 = (6.576e12/1e14)**2.
-	sigma_alpha_squared_20 = (0.001)**2. 
-	sigma_squared_list_20 = [sigma_beta_squared, sigma_alpha_squared_20, sigma_r2_squared_20, sigma_rho2_squared_20]
-
-	#40% mass error#
-	sigma_r2_squared = (0.074)**2.
-	sigma_rho2_squared = (11.218e12/1e14)**2.
-	sigma_alpha_squared = (0.002)**2.
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
-
-
-	##############################	
-	##############################	
-	##############################	
-	##############################	
-	##############################	
 
 	############
 	#### zmax  ##### 
 	############
-	# z_max_array = np.array([ 0.2,  0.3,  0.4,  0.5,  0.6,  0.67,0.7,  0.8])
 
-	z_max_array = np.arange(.2,.8,1e-1)
+	z_max_array = np.arange(.2,.8,1e-1)	
 
 	FoM_array_max = np.zeros_like(z_max_array) *0.
 	FoM_20pct_array_max = np.zeros_like(z_max_array) *0.
@@ -397,7 +281,7 @@ def plot_fig8_invArea_oM_w(plot):
 	############
 	#### zmin  ##### 
 	############
-	z_min_array= np.array([ 0.0001,  0.2,  0.3,  0.4,  0.5,  0.6])
+	z_min_array= np.array([ 0.001,  0.2,  0.3,  0.4,  0.5,  0.6])
 
 	FoM_array_min = np.zeros_like(z_min_array) *0.
 	FoM_20pct_array_min = np.zeros_like(z_min_array) *0.
@@ -426,39 +310,41 @@ def plot_fig8_invArea_oM_w(plot):
 	############
 	fig, ax = plt.subplots(1,2,sharey=True)
 
-	ax[0].plot(z_max_array,FoM_array_max,color='black',linewidth=2)
-	ax[0].plot(z_max_array,FoM_20pct_array_max,color='red',linewidth=2)
-	ax[0].plot(z_max_array,FoM_5pct_array_max,color='green',linewidth=2)
+	ax[0].plot(z_max_array,FoM_array_max,color='black',label='80% mass scatter',linewidth=2,ls='-')
+	ax[0].plot(z_max_array,FoM_20pct_array_max,color='black',label='40% mass scatter',linewidth=2,ls='--')
+	ax[0].plot(z_max_array,FoM_5pct_array_max,color='black',label='stacked',linewidth=2,ls=':')
+
+	ax[1].plot(z_min_array,FoM_array_min,color='black',ls='-',linewidth=2)
+	ax[1].plot(z_min_array,FoM_20pct_array_min,color='black',ls='--',linewidth=2)
+	ax[1].plot(z_min_array,FoM_5pct_array_min,color='black',ls=':',linewidth=2)
 
 
-	ax[1].plot(z_min_array,FoM_array_min,color='black',linewidth=2)
-	ax[1].plot(z_min_array,FoM_20pct_array_min,color='red',linewidth=2)
-	ax[1].plot(z_min_array,FoM_5pct_array_min,color='green',linewidth=2)
 
 	ax[0].set_ylabel('$1/\sqrt{\mathrm{det}[\mathrm{Cov}(\Omega_M,w)]}$',fontsize=20)
-
-	# ax[0].set_ylabel('A^${-1}(\Omega_M,w)$',fontsize=20)
 
 	ax[0].set_xlabel('$z_{max}$',fontsize=20)
 	ax[1].set_xlabel('$z_{min}$',fontsize=20)
 
-	ax[0].text(.25,3.6e4,'stacked',color='green',fontsize=20)
-	ax[0].text(.25,1.5e4,'20% mass scatter',color='red',fontsize=20)
-	ax[0].text(.25,0.5e4,'40% mass scatter',color='black',fontsize=20)
+
+	ax[0].legend(loc='best',frameon=False)
+
 
 	ax[0].semilogy()
 	ax[1].semilogy()
 
-	ax[0].set_ylim(1e-0,2e5)
-	ax[1].set_ylim(1e-0,2e5)
+	ax[0].set_ylim(1e-0,3e3)
+	ax[1].set_ylim(1e-0,3e3)
 
 	ax[0].set_xlim(0.2,.8)
 	ax[1].set_xlim(0.,.6)
 
 def plot_fig1_req(plot):
-	plt.plot(redshift_array,r_eq_flat(redshift_array,alpha_fid,rho_2_fid,r_2_fid,0.35,0.7,-1),color='black',ls=':',label=r'flat $\Lambda$CDM, $\Omega_M = 0.35$',linewidth=1.5)
-	plt.plot(redshift_array,r_eq_flat(redshift_array,alpha_fid,rho_2_fid,r_2_fid,0.3,0.7,-1),color='black',ls='--',label=r'flat $\Lambda$CDM, $\Omega_M = 0.3$',linewidth=1.5)
-	plt.plot(redshift_array,r_eq_flat(redshift_array,alpha_fid,rho_2_fid,r_2_fid,0.25,0.7,-1),color='black',ls='-',label=r'flat $\Lambda$CDM, $\Omega_M = 0.25$',linewidth=1.5)
+
+	redshift_array= np.linspace(0.001 , 0.8, 100).round(5)
+
+	plt.plot(redshift_array,r_eq(redshift_array,alpha_fid,rho_2_fid,r_2_fid,np.array([-1,0.35,0.7]),'flat'),color='black',ls=':',label=r'flat $\Lambda$CDM, $\Omega_M = 0.35$',linewidth=1.5)
+	plt.plot(redshift_array,r_eq(redshift_array,alpha_fid,rho_2_fid,r_2_fid,np.array([-1,0.3,0.7]),'flat'),color='black',ls='--',label=r'flat $\Lambda$CDM, $\Omega_M = 0.3$',linewidth=1.5)
+	plt.plot(redshift_array,r_eq(redshift_array,alpha_fid,rho_2_fid,r_2_fid,np.array([-1,0.25,0.7]),'flat'),color='black',ls='-',label=r'flat $\Lambda$CDM, $\Omega_M = 0.25$',linewidth=1.5)
 
 	plt.legend(loc='lower right',frameon= False)
 	plt.ylabel('$r_{eq}$ [Mpc]' ,fontsize=20)
@@ -491,19 +377,31 @@ def plot_fig3_deltaV_radius(plot):
 	v_quintessence = v_esc_theory_flat(theta_array, z_c,alpha_fid,rho_2_fid,r_2_fid,beta_fid,Omega_M_fid,little_h_fid,-.5)
 	v_phantom = v_esc_theory_flat(theta_array, z_c,alpha_fid,rho_2_fid,r_2_fid,beta_fid,Omega_M_fid,little_h_fid,-1.5)
 
-
 	delta_v_quintessence = (v_quintessence-v_lambda) / v_lambda
 	delta_v_phantom_DE = (v_phantom-v_lambda) / v_lambda
 
-	plt.plot(radius_array,delta_v_quintessence,linewidth=2,ls= '-',color='red')
-	plt.plot(radius_array,delta_v_phantom_DE,linewidth=2,ls= '-',color='black')
+	# plt.plot(radius_array,delta_v_quintessence,linewidth=2,ls= '-',color='red')
+	# plt.plot(radius_array,delta_v_phantom_DE,linewidth=2,ls= '-',color='black')
 
-	plt.axhline(0,color='grey',linewidth=2)
-	plt.text(0.8,.12, r'quintessence ($w=-0.5$)',rotation=11,color='red',fontsize=20)
-	plt.text(0.7,.01, r'$\Lambda$ ($w=-1$)',rotation=0,color='grey',fontsize=20)
-	plt.text(1.45,-0.035, r'phantom DE ($w=-1.5$)',rotation=-4.5,color='black',fontsize=20)
+	# plt.axhline(0,color='grey',linewidth=2)
+	# plt.text(0.8,.15, r'quintessence ($w=-0.5$)',rotation=15,color='red',fontsize=20)
+	# plt.text(0.7,.006, r'$\Lambda$ ($w=-1$)',rotation=0,color='grey',fontsize=20)
+	# plt.text(1.45,-0.047, r'phantom DE ($w=-1.5$)',rotation=-8,color='black',fontsize=20)
+
+
+
+	plt.plot(radius_array,delta_v_quintessence,linewidth=2,ls= '-',color='black')
+	plt.plot(radius_array,delta_v_phantom_DE,linewidth=2,ls= ':',color='black')
+
+	plt.axhline(0,color='black',ls='--',linewidth=2)
+	plt.text(0.8,.15, r'quintessence ($w=-0.5$)',rotation=15,color='black',fontsize=20)
+	plt.text(0.7,.006, r'$\Lambda$ ($w=-1$)',rotation=0,color='black',fontsize=20)
+	plt.text(1.45,-0.045, r'phantom DE ($w=-1.5$)',rotation=-8,color='black',fontsize=20)
+
+
 
 	plt.xlabel('radius [Mpc]',fontsize=20)
 	plt.ylabel('$\Delta v_{esc}(r) /  v_{esc}(r)$',fontsize=20)
 
 	plt.ylim(-.1,.2)
+

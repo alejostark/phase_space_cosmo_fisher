@@ -168,6 +168,7 @@ def H_z_function(z_c,cosmo_params,case):
 
 def r_eq(z_c,alpha,rho_2_1e14,r_2,cosmo_params,case):
     #equivalence radius in Mpc for all cosmology cases
+
     """cosmology"""
     if case == 'non_flat':
         omega_DE, omega_M, little_h = cosmo_params
@@ -247,6 +248,15 @@ def D_A(z_c,cosmo_params,case):
 
 
     return r_z/(1.+z_c) 
+
+def rho_crit_z(redshift,w,omega_M,little_h):
+    """
+    critical density of flat universe as a function of redshift and cosmology
+    output units are Msun/Mpc^3
+    """
+    H0= 100. * little_h #km/s/Mpc
+    rho_crit= cosmolopy.density.cosmo_densities(omega_M_0 = omega_M, omega_lambda_0 = (1.-omega_M) , omega_k_0 = 0. , h = little_h)[0] #Msun/Mpc^3
+    return rho_crit * (H_z_function(redshift,[w,omega_M,little_h],'flat')/H0)**2.
 
 
 """""""""""""""""""""""""""""""""""""""""""""
@@ -579,7 +589,22 @@ def weighted_avg_and_std(values, weights):
     variance = np.average((values-average)**2, weights=weights)  # Fast and numerically precise
     return (average, np.sqrt(variance))
 
+def concentration_meta(mass,redshift,little_h):
+    """
+    input m200 & cosmology --> c200
+    (concentration relation used in Sereno's metacatalog)
 
+    NOTE: input masses must be in same cosmology as little_h listed
+    and in units of Msun
+    """
+    A = 5.71 
+    B = -0.084 
+    C= -0.47 
+    Mpivot = 2e12/little_h
+
+    c200 = A * (mass/Mpivot)**B * (1+redshift)**C
+    
+    return c200
 
 
 
@@ -1182,7 +1207,7 @@ def v_esc_theory_flat_lambda_old(r,z_c,alpha,rho_2_1e14,r_2,beta,little_h,omega_
 
 """ un projected Psi """
 
-def psi_w_z(r,z_c,alpha,rho_2_1e14,r_2,omega_M,little_h,w):
+def phi_w_z(r,z_c,alpha,rho_2_1e14,r_2,omega_M,little_h,w):
     """cosmology"""
     H_z = H_z_function(z_c, [w, omega_M,little_h],'flat')
     q_z= q_z_function(z_c,[w, omega_M],'flat')
@@ -1242,6 +1267,30 @@ def psi_w_z(r,z_c,alpha,rho_2_1e14,r_2,omega_M,little_h,w):
     return psi
 
 
+def psi_einasto(r,alpha,rho_2_1e14,r_2):
+    """Einasto"""
+    ### map betweenEinasto params and Miller et al params###
+    rho_2 = rho_2_1e14*1e14
+
+    n = 1/alpha
+    rho_0 = rho_2 * np.exp(2.*n)
+    h = r_2 / (2.*n)**n
+
+    d_n = (3*n) - (1./3.) + (8./1215.*n) + (184./229635.*n**2.) + (1048./31000725.*n**3.) - (17557576./1242974068875. * n**4.) 
+    gamma_3n = 2 * ((ss.gammainc(3*n , d_n) ) * ss.gamma(3*n))
+    Mtot = 4. * np.pi * rho_0 * Msun * (h**3.) * n * gamma_3n #kg
+
+    G_newton = astroc.G.to( u.Mpc *  u.km**2 / u.s**2 / u.kg).value #Mpc km2/s^2 kg
+
+    ### phi orig ###
+    s_orig = r/h
+
+    part1_orig = 1. - ( ( ss.gammaincc(3.*n,s_orig**(1./n)) * ss.gamma(3.*n) ) / gamma_3n )
+    part2_orig = (s_orig *  ss.gammaincc(2.*n,s_orig**(1./n)) * ss.gamma(2.*n) ) / gamma_3n
+
+    phi_ein_orig =  -(G_newton* Mtot/(s_orig*h)) * (part1_orig+part2_orig)
+
+    return phi_ein_orig
 
 
 

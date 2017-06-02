@@ -27,7 +27,7 @@ Where,
 
 'r' is a radius array defined below and 'z_c' is the cluster redshift
 
-'cluster_params' refers to beta, alpha, rho-2,r-2 (last three from Einasto profile and beta =anisotropy parameter)
+'cluster_params' refers to beta, alpha, rho-2,r-2 (last three from Einasto profile and beta = anisotropy parameter)
 
 'cosmo_params' are divided into three different cases:
 
@@ -35,23 +35,20 @@ Where,
 (2) flat universe evolving w(z) (omegaM, w0, wa, H0) ... 'w_z'
 (3) non-flat universe w/ w=-1 (omegaM, omega_L, H0) ... 'non_flat'
 
-Note that in all 3 cases I marginalize over H0 to attain a 2-dim likelihood. For #2 I marginalize over H0 and omegaM.
+In terms of cosmo parames,  in all 3 cases we marginalize over H0 to attain a 2-dim likelihood. 
+For #2 we marginalize over H0 and omegaM.
 
 INSTRUCTIONS:
 (1) Pick one of the cases to run below
 (2) Specify the number of clusters and redshift range for those clusters
-(3) Specify uncertainties on the 4 cluster parameters and observed escape velocity "edge." 
+(3) Specify uncertainties on the 4 cluster parameters and observed escape velocity "edge."
+You may also want to change the cluster uncertainty parameters (see function below) if you want to change
+the values going into the prior matrix. You can re-calculate these for any mass percent error with einasto_error.py
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""
-CASES: pick between: flat, w_z, non_flat
-"""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-user_input_case = 'flat'
-stacked = 'no' #stacking: yes or no? (changes uncertainties, see below)
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 PARAMETER specifications: pick integer number of clusters and redshift range
@@ -59,16 +56,17 @@ PARAMETER specifications: pick integer number of clusters and redshift range
 sample_number_of_clusters = 100
 sample_redshift_array = np.linspace(0.001 , 0.8, sample_number_of_clusters).round(5) # 0.00001 <= z_c <= 0.8 is range optimized
 
-radius_array = np.linspace(0.5,2.5,14).round(3) #Don't change! This specifies radius array for profiles. used in v_esc(r) funcs below. 
+radius_array = np.linspace(0.5,2.5,14).round(3) #specify radius array for profiles. used in v_esc(r) funcs below.
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 FIDUCIAL VALUES to evaluate Fisher matrix derivatives
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 #alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid
 
-alpha_fid = 0.253
-rho_2_fid = 1.358e14/1e14
-r_2_fid = 0.563
+""" equivalent to M200=4e14 at z=0; use einasto_error.py to map"""
+alpha_fid = 0.1984
+rho_2_fid = 105129885699836.28/1e14
+r_2_fid =  0.497
 beta_fid = 0.145 
 
 Omega_M_fid = 0.3001
@@ -86,49 +84,83 @@ lil_Omega_DE_fid  = Omega_DE_fid * little_h_fid**2.
 z_t = z_trans([w_fid,Omega_M_fid],'flat')
 
 """""""""""""""""""""""
-PARAMETER UNCERTAINTIES 
+CLUSTER PARAMETER UNCERTAINTIES 
 """""""""""""""""""""""
-if stacked == 'yes':
-	#UNCERTAINTIES used assuming we're stacking clusters.
+def cluster_uncertainty_params(case):
+	#units of r_2 in Mpc ; units of rho_2 in Msun/Mpc^3 ;alpha is unitless
 
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared =  (0.02)**2. 
+	if case == '5pct_none':
+		#UNCERTAINTIES used assuming we're stacking clusters
+		#and we're **NOT** FIXING cosmology, 5% -> 10%
 
-	######5% mass error######
-	sigma_r2_squared = (0.01)**2.
-	sigma_rho2_squared = (1.635e12/1e14)**2.
-	sigma_alpha_squared = (-0.0001)**2. 
+		######Prior from Lokas paper on SINGLE beta######
+		sigma_beta_squared =  (0.02)**2. 
 
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
+		######5% mass error######
+		sigma_r2_squared = (0.031413740507)**2.
+		sigma_rho2_squared = (5.8872905321e12/1e14)**2.
+		sigma_alpha_squared = (0.00248973353699)**2. 
 
-	cluster_edge_unc = np.sqrt(50**2 + (1000 * 0.15/2)**2 )
+		sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
 
-elif stacked == 'no':
-	######Prior from Lokas paper on SINGLE beta######
-	sigma_beta_squared =  (0.5)**2.  
+		cluster_edge_unc = np.sqrt(50**2 + (1000 * 0.15/2)**2 )
 
-	####40% mass error#####
-	sigma_r2_squared = (0.074)**2.
-	sigma_rho2_squared = (11.218e12/1e14)**2.
-	sigma_alpha_squared = (0.002)**2.
+	elif case == '20pct_none':
+		#UNCERTAINTIES used assuming we're using 20% scatter on M200
+		#and we're **NOT** FIXING cosmology, 20% -> 40%
 
-	######20% mass error######
-	sigma_r2_squared_20 = (0.035)**2.
-	sigma_rho2_squared_20 = (6.576e12/1e14)**2.
-	sigma_alpha_squared_20 = (0.001)**2. 
+		######Prior from Lokas paper on SINGLE beta######
+		sigma_beta_squared =  (0.5)**2.  
 
-	sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
-	sigma_squared_list_20 = [sigma_beta_squared, sigma_alpha_squared_20, sigma_r2_squared_20, sigma_rho2_squared_20]
+		####40% mass error#####
+		sigma_r2_squared = ( 0.134207730737)**2.
+		sigma_rho2_squared = (23.5893129936e12/1e14)**2.
+		sigma_alpha_squared = (0.00961946729343)**2.
 
-	cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
+		sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
+		
+		cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.) 
 
+	elif case == '40pct_none':
+		#UNCERTAINTIES used assuming we're using 40% scatter on M200
+		#and we're **NOT** FIXING cosmology, 40% -> 80%
+
+		####Prior from Lokas paper on SINGLE beta######
+		sigma_beta_squared =  (0.5)**2.  
+
+		####40% mass error#####
+		sigma_r2_squared = (  0.291313467809)**2. 
+		sigma_rho2_squared = (43.9040001563e12/1e14)**2. 
+		sigma_alpha_squared = (0.0181365400778)**2.
+
+		sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
+		
+		cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.)
+
+	elif case == '40pct_riess':
+		#UNCERTAINTIES used assuming we're using stat. 40% scatter on M200
+		#and we're applyign Riess et al '16 prior on H0
+		#that means 40pct_none (80% error) goes down to 40%
+
+		######Prior from Lokas paper on SINGLE beta######
+		sigma_beta_squared =  (0.5)**2.  
+
+		####40% mass error#####
+		sigma_r2_squared = ( 0.134207730737)**2.
+		sigma_rho2_squared = (23.5893129936e12/1e14)**2.
+		sigma_alpha_squared = (0.00961946729343)**2.
+
+		sigma_squared_list = [sigma_beta_squared, sigma_alpha_squared, sigma_r2_squared, sigma_rho2_squared]
+		
+		cluster_edge_unc = np.sqrt(50**2 + 50**2 + (1000*0.25/2)**2.)
+
+	return sigma_squared_list, cluster_edge_unc
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-FISHER MATRIX :Run loop of derivatives and make Fisher matrix for three cases: 
+FISHER MATRIX :Run loop of derivatives for Nclus and make Fisher matrix for three cases: 
  flat (omegaM, w, H0); flat (omegaM, w0, wa, H0) ;non_flat (omegaM,omegaL, H0)
   and plot.
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
 
 def calculate_derivatives(z_c_array,case):
 
@@ -777,7 +809,6 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 		print 'marginalized sigma(omega_M) >= ', np.sqrt(G_inv_tot[0][0])
 		print 'marginalized  sigma(omega_Lambda) >= ', np.sqrt(G_inv_tot[1][1])
 
-
 	elif case == 'non_flat_lilomega':
 		dv_dlilOmegaM_array, dv_dlilOmegaL_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array = calculate_derivatives(z_c_array,'non_flat_lilomega') 
 
@@ -1044,7 +1075,7 @@ def plot_derivatives(z_c_array):
 	ax[0,1].set_ylim(20,170)
 
 	ax[1,0].set_xlim(0.5,2.5)
-	ax[1,0].set_ylim(320,670)
+	# ax[1,0].set_ylim(320,670)
 
 	ax[1,1].set_xlim(0.5,2.5)
 	ax[1,1].set_ylim(-1500,100)
@@ -1092,10 +1123,13 @@ User input
 
 # G_matrix_user_input = make_G_matrix(user_input_z_array, user_input_case,sigma_squared_list,cluster_edge_unc)
 
-print '\n Step 2: plotting contours... \n'
+# print '\n Step 2: plotting contours... \n'
 
-G_matrix = make_G_matrix(sample_redshift_array, user_input_case,sigma_squared_list,cluster_edge_unc)
+# plot_2d_contours_from_G(G_matrix_user_input,user_input_case)
 
-plot_2d_contours_from_G(G_matrix,user_input_case)
+
+
+
+
 
 
