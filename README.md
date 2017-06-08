@@ -28,7 +28,7 @@ Generates 3D plots of qH^2 and other cosmological quantities as a function of re
 ----------------------------
 TUTORIAL
 
-Open fisher_matrix.py and specify the number of clusters and redshift range (see 'sample_redshift_array' and 'sample_number_of_clusters') used to generate 2D contours for a given cosmological case. Then specify which of the three parameter cases you want to constraint (pick either 'flat', 'w_z', or 'non_flat' -- see code). Run fisher_matrix to generate 2d contours of whatever cosmological case you specify. You can also read in-code documentation and Stark et al 2017 (https://arxiv.org/abs/1611.06886) for more detals.
+Open fisher_matrix.py and specify the number of clusters and redshift range (see 'sample_redshift_array' and 'sample_number_of_clusters') used to generate 2D contours for a given cosmological case. Then specify which of the three parameter cases you want to constraint (pick either 'flat', 'w_z', 'non_flat', or others... see code). Run fisher_matrix to generate 2d contours of whatever cosmological case you specify. You can also read in-code documentation and Stark et al 2017 (https://arxiv.org/abs/1611.06886) for more detals.
 
 ----------------------------
 LIBRARIES 
