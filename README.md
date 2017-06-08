@@ -1,5 +1,5 @@
 # phase_space_cosmo_fisher
-Codes used to produce Fisher matrix 2D contours found in Stark, Miller Huterer 2016 https://arxiv.org/abs/1611.06886 (v2)
+Codes used to produce Fisher matrix 2D contours found in Stark, Miller Huterer 2017 https://arxiv.org/abs/1611.06886 (v2)
 
 ----------------------------
 MAIN codes
