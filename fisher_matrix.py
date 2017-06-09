@@ -29,21 +29,27 @@ Where,
 
 'cluster_params' refers to beta, alpha, rho-2,r-2 (last three from Einasto profile and beta = anisotropy parameter)
 
-'cosmo_params' are divided into three different cases:
+'cosmo_params' are divided into two different cases, you need to pick pick a 'case' to make inverted F matrix (ie the G matrix)
 
-(1) flat universe (omegaM=1-omegaDE, w, H0)... 'flat'
-(2) flat universe evolving w(z) (omegaM, w0, wa, H0) ... 'w_z'
-(3) non-flat universe w/ w=-1 (omegaM, omega_L, H0) ... 'non_flat'
+(1) flat universe(omegaM=1-omegaDE, w, H0)
+    1a) constant w (omegaM, w, H0)... case = 'flat'
+    1b) evolving w(z) w/ h prior (omegaM, w0, wa, H0)) ... case= 'w_z'
+    1c) evolving w(z) (omegaM, w0, wa, H0) ... case = 'w_z_riess16_h'
+    1d) evolving w(z) w/ fixed h (omegaM, w0, wa) ... case = 'w_z_fixed_h'
+    
+(2) non-flat universe w/ w=-1 
+    2a) no Riess prior (omegaM, omega_L, H0) ... case = 'non_flat'
+	2b) w/ Riess prior (omegaM, omega_L, H0) ... case = 'non_flat_riess_prior'
 
 In terms of cosmo parames,  in all 3 cases we marginalize over H0 to attain a 2-dim likelihood. 
 For #2 we marginalize over H0 and omegaM.
 
 INSTRUCTIONS:
+See commented out code in the last section of fisher_matrix.py (under "user input")
 (1) Pick one of the cases to run below
 (2) Specify the number of clusters and redshift range for those clusters
-(3) Specify uncertainties on the 4 cluster parameters and observed escape velocity "edge."
-You may also want to change the cluster uncertainty parameters (see function below) if you want to change
-the values going into the prior matrix. You can re-calculate these for any mass percent error with einasto_error.py
+(3) Specify uncertainties on the 4 cluster parameters and observed escape velocity "edge." You may also want to change the cluster uncertainty parameters 
+(see function below) if you want to change the values going into the prior matrix. You can re-calculate these for any mass percent error with einasto_error.py
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -53,9 +59,9 @@ the values going into the prior matrix. You can re-calculate these for any mass 
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 FIDUCIAL VALUES to evaluate Fisher matrix derivatives
 """""""""""""""""""""""""""""""""""""""""""""""""""""
-#alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid
-
 radius_array = np.linspace(0.5,2.5,14).round(3) #specify radius array for profiles. used in v_esc(r) funcs below.
+
+#alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid
 
 """ equivalent to M200=4e14 at z=0; use einasto_error.py to map"""
 alpha_fid = 0.1984
@@ -492,7 +498,6 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 
 	z_c_array = np.insert(z_c_array_del,1,add_z_array)
 
-
 	if case == 'flat':
 		""""""""""""""""""""
 		""""read in derivatives"""
@@ -530,8 +535,6 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 
 		G_inv_tot = F_inv_tot[0:2, 0:2]
 		G_matrix_tot = np.linalg.inv(G_inv_tot)
-
-		
 
 		print 'marginalized sigma(omega_M) >= ', np.sqrt(G_inv_tot[0][0])
 		print 'marginalized  sigma(w) >= ', np.sqrt(G_inv_tot[1][1])
@@ -571,36 +574,18 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 		print 'inverting F_tot matrix'
 		F_inv_tot = np.linalg.inv(F_tot)
 
-		G_inv_tot = F_inv_tot[0:2, 0:2]
+		#w0-wa submatrix marginalized
+		G_inv_tot = F_inv_tot[1:3, 1:3]
 		G_matrix_tot = np.linalg.inv(G_inv_tot)
 
-		
+		#oM-wa submatrix marginalized
+		G_inv_tot_oM_wa = F_inv_tot[0:2, 0:2]
 
 		print 'marginalized sigma(w0) >= ', np.sqrt(G_inv_tot[0][0])
 		print 'marginalized  sigma(wa) >= ', np.sqrt(G_inv_tot[1][1])
 
-		#### calculate pivot redshift
-		# F_tot.col_del(0)
-		# F_tot.row_del(0)
+		print 'marginalized  sigma(oM) >= ', np.sqrt(G_inv_tot_oM_wa[0][0])
 
-		# F_tot.col_del(2)
-		# F_tot.row_del(2)
-
-		# #F_tot_orig
-
-		# identity_matrix_new = np.identity(F_tot.shape[0])
-		# # F_inv_tot_new = Matrix(np.linalg.solve(F_tot, identity_matrix_new))
-		# F_inv_tot_new = F_tot.inv()
-
-		# G_inv_tot_new = F_inv_tot_new[1:3, 1:3]
-
-		# sigma_w0_squared = np.float(G_inv_tot_new[0])
-		# sigma_wa_squared = np.float(G_inv_tot_new[3])
-		# sigma_w0_wa= np.float(G_inv_tot_new[1])
-
-		# z_p = -sigma_w0_wa / (sigma_w0_wa + sigma_wa_squared)
-		# print z_p
-			
 	elif case == 'w_z_riess16_h':
 		
 		""""""""""""""""""""
@@ -636,11 +621,10 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 		print 'inverting F_tot matrix'
 		F_inv_tot = np.linalg.inv(F_tot)
 
-		G_inv_tot = F_inv_tot[0:2, 0:2]
+		G_inv_tot = F_inv_tot[1:3, 1:3]
 		G_matrix_tot = np.linalg.inv(G_inv_tot)
 
-		
-
+	
 		print 'marginalized sigma(w0) >= ', np.sqrt(G_inv_tot[0][0])
 		print 'marginalized  sigma(wa) >= ', np.sqrt(G_inv_tot[1][1])
 
@@ -680,7 +664,7 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 		""""""""""""""""""""
 		"""Fisher matrix """
 		""""""""""""""""""
-		N_cosmo = 3 #omegaM, w0, wa, H0
+		N_cosmo = 3 #omegaM, w0, wa
 		N_clus = len(dv_dbeta_array)
 		N_dim = 4* N_clus + N_cosmo
 
@@ -701,19 +685,58 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 		# F * x = Identity, where x = F^-1
 
 		F_tot = F + F_prior
-		identity_matrix = np.identity(N_dim)
-		# F_inv_tot = Matrix(np.linalg.solve(F_tot, identity_matrix))
 		F_inv_tot = F_tot.inv()
 
-		G_inv_tot = F_inv_tot[0:2,0:2]
-		# G_matrix_tot = Matrix(np.linalg.inv(G_inv_tot))
+		G_inv_tot = F_inv_tot[1:3,1:3]
 		G_matrix_tot = G_inv_tot.inv()
 
 		print 'marginalized sigma(w0) >= ', np.sqrt(np.float(G_inv_tot[0]))
 		print 'marginalized  sigma(wa) >= ', np.sqrt(np.float(G_inv_tot[3]))
 
-	elif case == 'non_flat_riess_prior':
+	elif case == 'non_flat':
 
+		""""""""""""""""""""
+		""""read in derivatives"""
+		""""""""""""""""""""
+		dv_dOmegaM_array, dv_domegaDE_array, dv_dh_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array = calculate_derivatives(z_c_array,'non_flat') 
+
+		#put together into a 7 x Nclus x Nradial_bins list
+		derivs_list = [dv_dOmegaM_array, dv_domegaDE_array,dv_dh_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array]
+
+		""""""""""""""""""""
+		"""Fisher matrix """
+		""""""""""""""""""
+		print 'making matrix..'
+
+		N_cosmo = 3 #Number of cosmological parameters we're probing, parameters related to cluster are 4: 3 from Einasto the other is beta
+		F = make_fisher_matrix(derivs_list,cluster_edge_unc,N_cosmo)
+		
+		""""""""""""""""""
+		"""Fisher prior"""
+		""""""""""""""""""
+		#Fprior
+		N_clus = len(dv_dbeta_array)
+		N_dim = 4* N_clus + N_cosmo
+
+		F_prior = make_prior_matrix(sigma_squared_list,N_cosmo,N_clus)
+
+		""""""""""""""""""
+		"""Fisher total"""
+		""""""""""""""""""
+		F_tot = F + F_prior
+
+		F_tot  = (np.array(np.array(F_tot),dtype='float'))
+		print 'inverting F_tot matrix'
+		F_inv_tot = np.linalg.inv(F_tot)
+
+		G_inv_tot = F_inv_tot[0:2, 0:2]
+		G_matrix_tot = np.linalg.inv(G_inv_tot)
+
+		###PLOTS####
+		print 'marginalized sigma(omega_M) >= ', np.sqrt(G_inv_tot[0][0])
+		print 'marginalized  sigma(omega_Lambda) >= ', np.sqrt(G_inv_tot[1][1])
+
+	elif case == 'non_flat_riess_prior':
 		""""""""""""""""""""
 		""""read in derivatives"""
 		""""""""""""""""""""
@@ -758,95 +781,9 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 		print 'marginalized sigma(omega_M) >= ', np.sqrt(G_inv_tot[0][0])
 		print 'marginalized  sigma(omega_Lambda) >= ', np.sqrt(G_inv_tot[1][1])
 
-	elif case == 'non_flat':
-
-		""""""""""""""""""""
-		""""read in derivatives"""
-		""""""""""""""""""""
-		dv_dOmegaM_array, dv_domegaDE_array, dv_dh_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array = calculate_derivatives(z_c_array,'non_flat') 
-
-		#put together into a 7 x Nclus x Nradial_bins list
-		derivs_list = [dv_dOmegaM_array, dv_domegaDE_array,dv_dh_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array]
-
-		""""""""""""""""""""
-		"""Fisher matrix """
-		""""""""""""""""""
-		print 'making matrix..'
-
-		N_cosmo = 3 #Number of cosmological parameters we're probing, parameters related to cluster are 4: 3 from Einasto the other is beta
-		F = make_fisher_matrix(derivs_list,cluster_edge_unc,N_cosmo)
-		
-		""""""""""""""""""
-		"""Fisher prior"""
-		""""""""""""""""""
-		#Fprior
-		N_clus = len(dv_dbeta_array)
-		N_dim = 4* N_clus + N_cosmo
-
-		F_prior = make_prior_matrix(sigma_squared_list,N_cosmo,N_clus)
-
-		""""""""""""""""""
-		"""Fisher total"""
-		""""""""""""""""""
-		F_tot = F + F_prior
-
-		F_tot  = (np.array(np.array(F_tot),dtype='float'))
-		print 'inverting F_tot matrix'
-		F_inv_tot = np.linalg.inv(F_tot)
-
-		G_inv_tot = F_inv_tot[0:2, 0:2]
-		G_matrix_tot = np.linalg.inv(G_inv_tot)
-
-		
-
-		###PLOTS####
-		print 'marginalized sigma(omega_M) >= ', np.sqrt(G_inv_tot[0][0])
-		print 'marginalized  sigma(omega_Lambda) >= ', np.sqrt(G_inv_tot[1][1])
-
-	elif case == 'non_flat_lilomega':
-		dv_dlilOmegaM_array, dv_dlilOmegaL_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array = calculate_derivatives(z_c_array,'non_flat_lilomega') 
-
-		#put together into a 7 x Nclus x Nradial_bins list
-		derivs_list = [dv_dlilOmegaM_array, dv_dlilOmegaL_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array]
-
-		""""""""""""""""""""
-		"""Fisher matrix """
-		""""""""""""""""""
-		print 'making matrix..'
-
-		N_cosmo = 2 #Number of cosmological parameters we're probing, parameters related to cluster are 4: 3 from Einasto the other is beta
-		F = make_fisher_matrix(derivs_list,cluster_edge_unc,N_cosmo)
-		
-		""""""""""""""""""
-		"""Fisher prior"""
-		""""""""""""""""""
-		#Fprior
-		N_clus = len(dv_dbeta_array)
-		N_dim = 4* N_clus + N_cosmo
-
-		F_prior = make_prior_matrix(sigma_squared_list,N_cosmo,N_clus)
-
-		""""""""""""""""""
-		"""Fisher total"""
-		""""""""""""""""""
-		F_tot = F + F_prior
-
-		print 'inverting F_tot matrix'
-		identity_matrix = np.identity(N_dim)
-		F_inv_tot = Matrix(np.linalg.solve(F_tot, identity_matrix))
-
-		G_inv_tot = F_inv_tot[0:2, 0:2]
-		G_matrix_tot = Matrix(np.linalg.inv(G_inv_tot))
-
-		
-
-		###PLOTS####
-		print 'marginalized sigma(lil_omega_M) >= ', np.sqrt(G_inv_tot[0][0])
-		print 'marginalized  sigma(lil_omega_Lambda) >= ', np.sqrt(G_inv_tot[1][1])
-
-	#return rounded Matrix
-	# G_matrix_totMatrix(np.array(G_inv_tot).astype(np.float64).round(3))
-	print 'log10(cond. number of Ftot) = ', np.log10(np.linalg.cond(F_tot))
+	#calculate condition number. should be < 12 for stable inverversion.
+ 	print 'log10(cond. number of Ftot) = ', np.log10(np.linalg.cond(F_tot))
+	#return Matrix
 	return Matrix(G_matrix_tot)
 
 
@@ -863,8 +800,8 @@ def plot_2d_contours_from_G(G_matrix_tot,case):
 
 	if case == 'flat':
 		###PLOTS####
-		omega_M_array = np.arange(-1,1.,3e-4)
-		w_array = np.linspace(-5,2, 3000)
+		omega_M_array = np.arange(-1,1.,3e-3)
+		w_array = np.arange(-5,2, 8e-3)
 
 		x, y = coord(omega_M_array, w_array)# return coordinate matrices from coordinate vectors
 
@@ -889,7 +826,38 @@ def plot_2d_contours_from_G(G_matrix_tot,case):
 
 		z_tot = G_matrix_tot[0]*x**2 + 2.0*G_matrix_tot[1]*(x*y) + G_matrix_tot[3]*(y**2)
 
-		# plt.contourf(x-1., y, z_tot,  [1/f_2sig,1/f_1sig], colors='black',ls='--',linewidths=1) #marginalized
+		plt.contour(x-1., y, z_tot,  [1/f_1sig,1/f_2sig], colors='red',ls='--',linewidths=1) #marginalized
+
+		plt.xlabel('$w_0$',fontsize=20)
+		plt.ylabel('$w_a$',fontsize=20)
+		plt.show()
+
+	elif case == 'w_z_riess16_h':
+		#marginalize over omegaM,h and other parameters to get w0-wa plane
+		###PLOTS####
+		w0_array = np.arange(-5,2, 1e-2)
+		wa_array = np.arange(-5,5, 1e-2)
+
+		x, y = coord(w0_array,wa_array)# return coordinate matrices from coordinate vectors
+
+		z_tot = G_matrix_tot[0]*x**2 + 2.0*G_matrix_tot[1]*(x*y) + G_matrix_tot[3]*(y**2)
+
+		plt.contour(x-1., y, z_tot,  [1/f_1sig,1/f_2sig], colors='red',ls='--',linewidths=1) #marginalized
+
+		plt.xlabel('$w_0$',fontsize=20)
+		plt.ylabel('$w_a$',fontsize=20)
+		plt.show()
+
+	elif case == 'w_z_fixed_h':
+		#marginalize over omegaM,h and other parameters to get w0-wa plane
+		###PLOTS####
+		w0_array = np.arange(-5,2, 1e-2)
+		wa_array = np.arange(-5,5, 1e-2)
+
+		x, y = coord(w0_array,wa_array)# return coordinate matrices from coordinate vectors
+
+		z_tot = G_matrix_tot[0]*x**2 + 2.0*G_matrix_tot[1]*(x*y) + G_matrix_tot[3]*(y**2)
+
 		plt.contour(x-1., y, z_tot,  [1/f_1sig,1/f_2sig], colors='red',ls='--',linewidths=1) #marginalized
 
 		plt.xlabel('$w_0$',fontsize=20)
@@ -912,37 +880,6 @@ def plot_2d_contours_from_G(G_matrix_tot,case):
 
 		plt.show()
 
-	#other...
-
-	elif case == 'non_flat_lilomega':
-		lil_omega_M_array = np.arange(-1,1.,2e-3)*little_h_fid**2.
-		lil_omega_DE_array = np.arange(-1,1.3,2e-3)*little_h_fid**2.
-
-		x, y = coord(lil_omega_M_array, lil_omega_DE_array)# return coordinate matrices from coordinate vectors
-		z = G_matrix_tot[0]*x**2 + 2.0*G_matrix_tot[1]*(x*y) + G_matrix_tot[3]*(y**2)
-
-		plt.contourf(x+(0.3 * 0.7**2.), y+(0.7 * 0.7**2.), z,  [1/f_2sig, 1/f_1sig] , colors='black') #marginalized
-		plt.contourf(x+(0.3 * 0.7**2.), y+(0.7 * 0.7**2.), z, [1/f_1sig,1/f_2sig] , colors='gray') #marginalized
-
-		plt.xlabel('$\Omega_M h^2$',fontsize=20)
-		plt.ylabel('$\Omega_{\Lambda} h^2$',fontsize=20)
-
-
-	elif case == 'non_flat_fixed_h':
-		omega_M_array = np.arange(-1,1.,2e-3)
-		omega_DE_array = np.arange(-1,1.3,2e-3)
-
-		x, y = coord(omega_M_array, omega_DE_array)# return coordinate matrices from coordinate vectors
-		z = G_matrix_tot[0]*x**2 + 2.0*G_matrix_tot[1]*(x*y) + G_matrix_tot[3]*(y**2)
-
-		plt.contour(x+0.3, y+0.7, z,  [1/f_3sig,1/f_2sig], colors='black',linewidths=1) #marginalized
-
-		plt.xlabel('$\Omega_M $',fontsize=20)
-		plt.ylabel('$\Omega_{\Lambda}$',fontsize=20)
-
-		plt.show()
-
-
 	elif case == 'non_flat_riess_prior':
 		omega_M_array = np.arange(-1,1.,2e-3)
 		omega_DE_array = np.arange(-1,1.3,2e-3)
@@ -954,24 +891,6 @@ def plot_2d_contours_from_G(G_matrix_tot,case):
 
 		plt.xlabel('$\Omega_M $',fontsize=20)
 		plt.ylabel('$\Omega_{\Lambda}$',fontsize=20)
-
-		plt.show()
-
-
-	elif case == 'flat_lambda':
-		omega_DE_array = np.arange(-1,1.3,5e-4)
-		h_array = np.arange(-.5, 1.5, 5e-4) 
-
-		x, y = coord(omega_DE_array, h_array)# return coordinate matrices from coordinate vectors
-
-		z =  G_matrix_tot[0]*x**2 + 2.0*G_matrix_tot[1]*(x*y) + G_matrix_tot[3]*(y**2)
-
-		plt.contour(x+0.7, y+0.7,z,  [1/f_2sig,1/f_1sig], colors='black',ls='--',linewidths=1) #marginalized
-
-		# CS = plt.contourf(x+0.3, y+0.7, z,cmap=plt.cm.Blues)
-
-		plt.xlabel('$\Omega_{\Lambda} $',fontsize=20)
-		plt.ylabel('$h$',fontsize=20)
 
 		plt.show()
 
@@ -1102,26 +1021,22 @@ def plot_derivatives_vary_w(z_c_array):
 	plt.xlim(0.5,2.5)
 	plt.ylim(-30,400)
 
-
 """""""""""
 User input
 """""""""
+# cosmo_case = 'w_z_riess16_h' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
 
 """specify redhsift range and Nclus"""
-# N_clus = 30 #number of clusters
-# redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) 
+# N_clus = 100 #number of clusters
+# redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) #uniform distribution
 
 """specify cluster parameter uncertainties"""
-# prior_case = '40pct_riess' #see cases in 'cluster_uncertainty_params' function
+# prior_case = '40pct_none' #see cases in 'cluster_uncertainty_params' function
 # sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
 
 """calculate uncertainties"""
-# cosmo_case = 'flat' #w_z, non_flat, flat
 # G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
 # plot_2d_contours_from_G(G_matrix_user_input,cosmo_case)
-
-
-
 
 
 
