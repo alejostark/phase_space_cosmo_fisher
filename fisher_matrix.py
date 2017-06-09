@@ -164,7 +164,7 @@ FISHER MATRIX :Run loop of derivatives for Nclus and make Fisher matrix for thre
 
 def calculate_derivatives(z_c_array,case):
 
-	dx_deriv = 1e-10	#spacing in parameter x
+	dx_deriv = 1e-10	#derivative
 
 	if case == 'flat':
 		#initiate lists to attach derivatives for all the clusters
@@ -307,177 +307,6 @@ def calculate_derivatives(z_c_array,case):
 		dv_drho_2_array = np.array(derivatives_CLUSTERparam_list[3::4])
 
 		return dv_dOmegaM_array, dv_dw0_array,dv_dwa_array, dv_dh_array,dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array
-
-	## others ###
-
-	elif case == 'w_z_fixed_h':
-		derivatives_COSMOparam_list = []
-		derivatives_CLUSTERparam_list = []
-
-		print 'calculating derivatives...'
-		for redshift_index in range(0,len(z_c_array)):
-
-			### cosmology derivatives ###
-			dv_dOmegaM = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, x,little_h_fid,w0_fid,wa_fid), Omega_M_fid,dx_deriv)
-			dv_dw0      = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,x,wa_fid), w0_fid,dx_deriv)
-			dv_dwa      = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,x), wa_fid,dx_deriv)
-
-			derivatives_COSMOparam_list.append(dv_dOmegaM)
-			derivatives_COSMOparam_list.append(dv_dw0)
-			derivatives_COSMOparam_list.append(dv_dwa)
-
-			### beta derivative ###
-			dv_dbeta  = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, x, Omega_M_fid,little_h_fid,w0_fid,wa_fid), beta_fid,dx_deriv)
-
-			### weak lensing derivatives ###
-			dv_dalpha = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],x, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid), alpha_fid,dx_deriv)
-			dv_dr_2   = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, x, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid), r_2_fid,dx_deriv)
-			dv_drho_2 = derivative(lambda x: v_esc_theory_w_z(radius_array,z_c_array[redshift_index],alpha_fid, x, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,w0_fid,wa_fid), rho_2_fid,dx_deriv)
-
-			derivatives_CLUSTERparam_list.append(dv_dbeta)
-			derivatives_CLUSTERparam_list.append(dv_dalpha)
-			derivatives_CLUSTERparam_list.append(dv_dr_2)
-			derivatives_CLUSTERparam_list.append(dv_drho_2)
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. COSMO params
-		dv_dOmegaM_array = np.array(derivatives_COSMOparam_list[0::3]) 
-		dv_dw0_array = np.array(derivatives_COSMOparam_list[1::3])
-		dv_dwa_array = np.array(derivatives_COSMOparam_list[2::3])
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. CLUSTER params
-		dv_dbeta_array = np.array(derivatives_CLUSTERparam_list[0::4])
-		dv_dalpha_array = np.array(derivatives_CLUSTERparam_list[1::4])
-		dv_dr_2_array = np.array(derivatives_CLUSTERparam_list[2::4])
-		dv_drho_2_array = np.array(derivatives_CLUSTERparam_list[3::4])
-
-		return dv_dOmegaM_array, dv_dw0_array,dv_dwa_array,dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array
-
-	elif case == 'non_flat_fixed_h':
-
-		#initiate lists to attach derivatives for all the clusters
-		derivatives_COSMOparam_list = []
-		derivatives_CLUSTERparam_list = []
-
-		#loop over all clusters
-		print 'calculating derivatives...'
-
-		for redshift_index in range(0,len(z_c_array)):
-
-			### cosmology derivatives ###
-			dv_dOmegaM = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid,           x,little_h_fid,   Omega_DE_fid), Omega_M_fid,dx_deriv)
-			dv_domegaDE= derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,              x), Omega_DE_fid,dx_deriv)
-
-			derivatives_COSMOparam_list.append(dv_dOmegaM)
-			derivatives_COSMOparam_list.append(dv_domegaDE)
-
-			### beta derivative ###
-			dv_dbeta  = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, x, Omega_M_fid,little_h_fid,Omega_DE_fid), beta_fid,dx_deriv)
-
-			### weak lensing derivatives ###
-			dv_dalpha = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],x, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,Omega_DE_fid), alpha_fid,dx_deriv)
-			dv_dr_2   = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, x, beta_fid, Omega_M_fid,little_h_fid,Omega_DE_fid), r_2_fid,dx_deriv)
-			dv_drho_2 = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, x, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,Omega_DE_fid), rho_2_fid,dx_deriv)
-
-			derivatives_CLUSTERparam_list.append(dv_dbeta)
-			derivatives_CLUSTERparam_list.append(dv_dalpha)
-			derivatives_CLUSTERparam_list.append(dv_dr_2)
-			derivatives_CLUSTERparam_list.append(dv_drho_2)
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. COSMO params
-		dv_dOmegaM_array = np.array(derivatives_COSMOparam_list[0::3]) 
-		dv_domegaDE_array = np.array(derivatives_COSMOparam_list[1::3])
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. CLUSTER params
-		dv_dbeta_array = np.array(derivatives_CLUSTERparam_list[0::4])
-		dv_dalpha_array = np.array(derivatives_CLUSTERparam_list[1::4])
-		dv_dr_2_array = np.array(derivatives_CLUSTERparam_list[2::4])
-		dv_drho_2_array = np.array(derivatives_CLUSTERparam_list[3::4])
-
-		return dv_dOmegaM_array, dv_domegaDE_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array
-
-	elif case == 'non_flat_lilomega':
-		#initiate lists to attach derivatives for all the clusters
-		derivatives_COSMOparam_list = []
-		derivatives_CLUSTERparam_list = []
-
-		#loop over all clusters
-		print 'calculating derivatives...'
-
-		for redshift_index in range(0,len(z_c_array)):
-
-			### cosmology derivatives ###
-			dv_dlilOmegaM = derivative(lambda x: v_esc_theory_non_flat_lil(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid,           x, lil_Omega_DE_fid), lil_Omega_M_fid,dx_deriv)
-			dv_dlilOmegaL= derivative(lambda x: v_esc_theory_non_flat_lil(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, lil_Omega_M_fid,            x), lil_Omega_DE_fid,dx_deriv)
-
-			derivatives_COSMOparam_list.append(dv_dlilOmegaM)
-			derivatives_COSMOparam_list.append(dv_dlilOmegaL)
-
-			### beta derivative ###
-			dv_dbeta  = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, x, Omega_M_fid,little_h_fid,Omega_DE_fid), beta_fid,dx_deriv)
-
-			### weak lensing derivatives ###
-			dv_dalpha = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],x, rho_2_fid, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,Omega_DE_fid), alpha_fid,dx_deriv)
-			dv_dr_2   = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, x, beta_fid, Omega_M_fid,little_h_fid,Omega_DE_fid), r_2_fid,dx_deriv)
-			dv_drho_2 = derivative(lambda x: v_esc_theory_non_flat(radius_array,z_c_array[redshift_index],alpha_fid, x, r_2_fid, beta_fid, Omega_M_fid,little_h_fid,Omega_DE_fid), rho_2_fid,dx_deriv)
-
-			derivatives_CLUSTERparam_list.append(dv_dbeta)
-			derivatives_CLUSTERparam_list.append(dv_dalpha)
-			derivatives_CLUSTERparam_list.append(dv_dr_2)
-			derivatives_CLUSTERparam_list.append(dv_drho_2)
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. COSMO params
-		dv_dlilOmegaM_array = np.array(derivatives_COSMOparam_list[0::2]) 
-		dv_dlilOmegaL_array = np.array(derivatives_COSMOparam_list[1::2])
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. CLUSTER params
-		dv_dbeta_array = np.array(derivatives_CLUSTERparam_list[0::4])
-		dv_dalpha_array = np.array(derivatives_CLUSTERparam_list[1::4])
-		dv_dr_2_array = np.array(derivatives_CLUSTERparam_list[2::4])
-		dv_drho_2_array = np.array(derivatives_CLUSTERparam_list[3::4])
-
-		return dv_dlilOmegaM_array, dv_dlilOmegaL_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array
-
-	elif case == 'flat_lambda':
-		#initiate lists to attach derivatives for all the clusters
-		derivatives_COSMOparam_list = []
-		derivatives_CLUSTERparam_list = []
-
-		#loop over all clusters
-		print 'calculating derivatives...'
-		for redshift_index in range(0,len(z_c_array)):
-
-			### cosmology derivatives ###
-			dv_dOmegaL = derivative(lambda x: v_esc_theory_flat_lambda(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, x,little_h_fid), Omega_DE_fid,dx_deriv)
-			dv_dh      = derivative(lambda x: v_esc_theory_flat_lambda(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, beta_fid, Omega_DE_fid, x ), little_h_fid,dx_deriv)
-
-			derivatives_COSMOparam_list.append(dv_dOmegaL)
-			derivatives_COSMOparam_list.append(dv_dh)
-
-			### beta derivative ###
-			dv_dbeta  = derivative(lambda x: v_esc_theory_flat_lambda(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, r_2_fid, x, Omega_DE_fid,little_h_fid), beta_fid,dx_deriv)
-
-			### weak lensing derivatives ###
-			dv_dalpha = derivative(lambda x: v_esc_theory_flat_lambda(radius_array,z_c_array[redshift_index],x, rho_2_fid, r_2_fid, beta_fid, Omega_DE_fid,little_h_fid), alpha_fid,dx_deriv)
-			dv_dr_2   = derivative(lambda x: v_esc_theory_flat_lambda(radius_array,z_c_array[redshift_index],alpha_fid, rho_2_fid, x, beta_fid, Omega_DE_fid,little_h_fid), r_2_fid,dx_deriv)
-			dv_drho_2 = derivative(lambda x: v_esc_theory_flat_lambda(radius_array,z_c_array[redshift_index],alpha_fid, x, r_2_fid, beta_fid, Omega_DE_fid,little_h_fid), rho_2_fid,dx_deriv)
-
-			derivatives_CLUSTERparam_list.append(dv_dbeta)
-			derivatives_CLUSTERparam_list.append(dv_dalpha)
-			derivatives_CLUSTERparam_list.append(dv_dr_2)
-			derivatives_CLUSTERparam_list.append(dv_drho_2)
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. COSMO params
-		dv_dOmegaL = np.array(derivatives_COSMOparam_list[0::2]) 
-		dv_dh_array = np.array(derivatives_COSMOparam_list[1::2])
-
-		#array of length n clusters by kth radial bins of v_esc deriv. w.r.t. CLUSTER params
-		dv_dbeta_array = np.array(derivatives_CLUSTERparam_list[0::4])
-		dv_dalpha_array = np.array(derivatives_CLUSTERparam_list[1::4])
-		dv_dr_2_array = np.array(derivatives_CLUSTERparam_list[2::4])
-		dv_drho_2_array = np.array(derivatives_CLUSTERparam_list[3::4])
-
-		#put together into a 7 x Nclus x Nradial_bins list
-		return dv_dOmegaL, dv_dh_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array
 
 def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 
@@ -650,48 +479,6 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 
 		# z_p = -sigma_w0_wa / (sigma_w0_wa + sigma_wa_squared)
 		# print z_p
-
-	elif case == 'w_z_fixed_h':
-
-		""""""""""""""""""""
-		""""read in derivatives"""
-		""""""""""""""""""""
-		dv_dOmegaM_array, dv_dw0_array,dv_dwa_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array = calculate_derivatives(z_c_array,'w_z_fixed_h') 
-
-		#put together into a 8 x Nclus x Nradial_bins list
-		derivs_list = [dv_dOmegaM_array, dv_dw0_array,dv_dwa_array, dv_dbeta_array, dv_dalpha_array, dv_dr_2_array, dv_drho_2_array]
-
-		""""""""""""""""""""
-		"""Fisher matrix """
-		""""""""""""""""""
-		N_cosmo = 3 #omegaM, w0, wa
-		N_clus = len(dv_dbeta_array)
-		N_dim = 4* N_clus + N_cosmo
-
-		print 'making matrix..'
-		F = make_fisher_matrix(derivs_list,cluster_edge_unc,N_cosmo)
-		
-		""""""""""""""""""
-		"""Fisher prior"""
-		""""""""""""""""""
-
-		F_prior = make_prior_matrix(sigma_squared_list,N_cosmo,N_clus)
-
-		""""""""""""""""""
-		"""Fisher total"""
-		""""""""""""""""""
-		print 'calculating F_inv_tot inverse..'
-		# np.linalg.solve(A, b) solves the equation A*x=b for x,
-		# F * x = Identity, where x = F^-1
-
-		F_tot = F + F_prior
-		F_inv_tot = F_tot.inv()
-
-		G_inv_tot = F_inv_tot[1:3,1:3]
-		G_matrix_tot = G_inv_tot.inv()
-
-		print 'marginalized sigma(w0) >= ', np.sqrt(np.float(G_inv_tot[0]))
-		print 'marginalized  sigma(wa) >= ', np.sqrt(np.float(G_inv_tot[3]))
 
 	elif case == 'non_flat':
 
@@ -1024,18 +811,18 @@ def plot_derivatives_vary_w(z_c_array):
 """""""""""
 User input
 """""""""
-# cosmo_case = 'w_z_riess16_h' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
+cosmo_case = 'flat' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
 
 """specify redhsift range and Nclus"""
-# N_clus = 100 #number of clusters
-# redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) #uniform distribution
+N_clus = 100 #number of clusters
+redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) #uniform distribution
 
 """specify cluster parameter uncertainties"""
-# prior_case = '40pct_none' #see cases in 'cluster_uncertainty_params' function
-# sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
+prior_case = '40pct_none' #see cases in 'cluster_uncertainty_params' function
+sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
 
 """calculate uncertainties"""
-# G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
+G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
 # plot_2d_contours_from_G(G_matrix_user_input,cosmo_case)
 
 

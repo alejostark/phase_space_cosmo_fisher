@@ -359,7 +359,6 @@ def plot_fig2_qz(plot):
 	plt.legend(loc='lower right',frameon= False)
 
 def plot_fig3_deltaV_radius(plot):
-
 	z_c = 0.001
 	
 	theta_array = radius_array / D_A(z_c,[w_fid, Omega_M_fid, little_h_fid],'flat')
