@@ -64,14 +64,14 @@ def plot_fig5_flat(plot):
 	plt.xlabel('$\Omega_M$',fontsize=20)
 	plt.ylabel('$w$',fontsize=20)
 
-	plt.xlim(.1,.5)
-	plt.ylim(-3,1)
+	plt.xlim(0,.6)
+	plt.ylim(-2,0)
 
 	plt.show()
 	
 def plot_fig6_w_z(plot):
 
-	reds_array= np.linspace(0.001 , 0.8, 100).round(5)
+	reds_array= np.linspace(0.001 , 0.8, 1000).round(5)
 
 	sigma_squared_list_40_none , cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
 	sigma_squared_list_20_none , cluster_edge_unc = cluster_uncertainty_params('20pct_none') 
@@ -125,18 +125,12 @@ def plot_fig6_w_z(plot):
 	plt.legend([ proxy3, proxy2, proxy1], [r'$40\%$ mass scatter w/ Riess et al 2016 $h$ prior', r'$40\%$ mass scatter',r'$80\%$ mass scatter' ],
       handler_map={mpatches.Circle: HandlerEllipse()},frameon=False,loc='upper left')
 
-
 	plt.xlabel('$w_0$',fontsize=20)
 	plt.ylabel('$w_a$',fontsize=20)
 
-	# plt.xlim(-3,1)
-	# plt.ylim(-2,2)
+	plt.xlim(-2,0)
+	plt.ylim(-3,3)
 	plt.show()
-
- 	plt.yticks(np.arange(-2,2.5,0.5))
- 	plt.ylim(-2,2)
-	plt.xticks(np.arange(-3,1.5,0.5))
-	plt.xlim(-3,1)
 
 def plot_fig7_nonflat(plot):
 	reds_array= np.linspace(0.001,.8,100).round(3)
@@ -248,7 +242,6 @@ def plot_fig8_invArea_oM_w(plot):
 	sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
 	sigma_squared_list_20, cluster_edge_unc = cluster_uncertainty_params('20pct_none') 
 
-
 	############
 	#### zmax  ##### 
 	############
@@ -318,8 +311,6 @@ def plot_fig8_invArea_oM_w(plot):
 	ax[1].plot(z_min_array,FoM_20pct_array_min,color='black',ls='--',linewidth=2)
 	ax[1].plot(z_min_array,FoM_5pct_array_min,color='black',ls=':',linewidth=2)
 
-
-
 	ax[0].set_ylabel('$1/\sqrt{\mathrm{det}[\mathrm{Cov}(\Omega_M,w)]}$',fontsize=20)
 
 	ax[0].set_xlabel('$z_{max}$',fontsize=20)
@@ -380,16 +371,6 @@ def plot_fig3_deltaV_radius(plot):
 	delta_v_quintessence = (v_quintessence-v_lambda) / v_lambda
 	delta_v_phantom_DE = (v_phantom-v_lambda) / v_lambda
 
-	# plt.plot(radius_array,delta_v_quintessence,linewidth=2,ls= '-',color='red')
-	# plt.plot(radius_array,delta_v_phantom_DE,linewidth=2,ls= '-',color='black')
-
-	# plt.axhline(0,color='grey',linewidth=2)
-	# plt.text(0.8,.15, r'quintessence ($w=-0.5$)',rotation=15,color='red',fontsize=20)
-	# plt.text(0.7,.006, r'$\Lambda$ ($w=-1$)',rotation=0,color='grey',fontsize=20)
-	# plt.text(1.45,-0.047, r'phantom DE ($w=-1.5$)',rotation=-8,color='black',fontsize=20)
-
-
-
 	plt.plot(radius_array,delta_v_quintessence,linewidth=2,ls= '-',color='black')
 	plt.plot(radius_array,delta_v_phantom_DE,linewidth=2,ls= ':',color='black')
 
@@ -397,8 +378,6 @@ def plot_fig3_deltaV_radius(plot):
 	plt.text(0.8,.15, r'quintessence ($w=-0.5$)',rotation=15,color='black',fontsize=20)
 	plt.text(0.7,.006, r'$\Lambda$ ($w=-1$)',rotation=0,color='black',fontsize=20)
 	plt.text(1.45,-0.045, r'phantom DE ($w=-1.5$)',rotation=-8,color='black',fontsize=20)
-
-
 
 	plt.xlabel('radius [Mpc]',fontsize=20)
 	plt.ylabel('$\Delta v_{esc}(r) /  v_{esc}(r)$',fontsize=20)
