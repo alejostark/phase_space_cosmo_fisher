@@ -415,6 +415,17 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 
 		print 'marginalized  sigma(oM) >= ', np.sqrt(G_inv_tot_oM_wa[0][0])
 
+
+		########################################
+		# calculate pivot redshift
+		#######################################
+
+		sigma_wa_squared = (G_inv_tot[1][1])**2.
+		sigma_w0_wa = G_inv_tot[0][1]
+
+		z_p = -sigma_w0_wa / (sigma_w0_wa + sigma_wa_squared)
+		print 'Pivot redshift =', z_p
+
 	elif case == 'w_z_riess16_h':
 		
 		""""""""""""""""""""
@@ -456,29 +467,6 @@ def make_G_matrix(z_array, case,sigma_squared_list,cluster_edge_unc):
 	
 		print 'marginalized sigma(w0) >= ', np.sqrt(G_inv_tot[0][0])
 		print 'marginalized  sigma(wa) >= ', np.sqrt(G_inv_tot[1][1])
-
-
-		#### calculate pivot redshift
-		# F_tot.col_del(0)
-		# F_tot.row_del(0)
-
-		# F_tot.col_del(2)
-		# F_tot.row_del(2)
-
-		# #F_tot_orig
-
-		# identity_matrix_new = np.identity(F_tot.shape[0])
-		# # F_inv_tot_new = Matrix(np.linalg.solve(F_tot, identity_matrix_new))
-		# F_inv_tot_new = F_tot.inv()
-
-		# G_inv_tot_new = F_inv_tot_new[1:3, 1:3]
-
-		# sigma_w0_squared = np.float(G_inv_tot_new[0])
-		# sigma_wa_squared = np.float(G_inv_tot_new[3])
-		# sigma_w0_wa= np.float(G_inv_tot_new[1])
-
-		# z_p = -sigma_w0_wa / (sigma_w0_wa + sigma_wa_squared)
-		# print z_p
 
 	elif case == 'non_flat':
 
@@ -811,18 +799,18 @@ def plot_derivatives_vary_w(z_c_array):
 """""""""""
 User input
 """""""""
-cosmo_case = 'flat' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
+# cosmo_case = 'w_z' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
 
 """specify redhsift range and Nclus"""
-N_clus = 100 #number of clusters
-redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) #uniform distribution
+# N_clus = 100 #number of clusters
+# redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) #uniform distribution
 
 """specify cluster parameter uncertainties"""
-prior_case = '40pct_none' #see cases in 'cluster_uncertainty_params' function
-sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
+# prior_case = '40pct_none' #see cases in 'cluster_uncertainty_params' function
+# sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
 
 """calculate uncertainties"""
-G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
+# G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
 # plot_2d_contours_from_G(G_matrix_user_input,cosmo_case)
 
 
