@@ -72,6 +72,7 @@ def plot_fig5_flat(plot):
 def plot_fig6_w_z(plot):
 
 	reds_array= np.linspace(0.001 , 0.8, 1000).round(5)
+	reds_array_100= np.linspace(0.001 , 0.8, 100).round(5)
 
 	sigma_squared_list_40_none , cluster_edge_unc = cluster_uncertainty_params('40pct_none') 
 	sigma_squared_list_20_none , cluster_edge_unc = cluster_uncertainty_params('20pct_none') 
@@ -80,13 +81,24 @@ def plot_fig6_w_z(plot):
 	### Make G matrix ### 
 	G_wz_40 = make_G_matrix(reds_array, 'w_z',sigma_squared_list_40_none,cluster_edge_unc)
 	G_wz_20 = make_G_matrix(reds_array, 'w_z',sigma_squared_list_20_none,cluster_edge_unc)
-	G_wz_riess_prior =  make_G_matrix(reds_array, 'w_z_riess16_h',sigma_squared_list_40_riess,cluster_edge_unc)
+	G_wz_riess_prior =  make_G_matrix(reds_array_100, 'w_z_riess16_h',sigma_squared_list_40_riess,cluster_edge_unc)
 
 	#marginalize over omegaM,h and other parameters to get w0-wa plane
 	w0_array = np.arange(-5,2, 1e-2)
 	wa_array = np.arange(-5,5, 1e-2)
 
 	x, y = coord(w0_array,wa_array)# return coordinate matrices from coordinate vectors
+
+	####################
+	#ellipse 3: 
+	####################
+	
+	z_riess_prior = G_wz_riess_prior[0]*x**2 + 2.0*G_wz_riess_prior[1]*(x*y) + G_wz_riess_prior[3]*(y**2)
+
+	plt.contourf(x-1., y+0., z_riess_prior,  [1/f_1sig,0] , colors='crimson') #marginalized
+	plt.contourf(x-1., y+0., z_riess_prior,  [1/f_1sig,1/f_2sig] , colors='pink') #marginalized
+
+	proxy3 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="crimson",edgecolor="pink", linewidth=3)
 
 	####################
 	### ellipse 1: 40%
@@ -110,26 +122,16 @@ def plot_fig6_w_z(plot):
 
 	proxy2 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="darkslateblue", edgecolor="mediumslateblue", linewidth=3)
 
-	####################
-	#ellipse 3: 
-	####################
-	
-	z_riess_prior = G_wz_riess_prior[0]*x**2 + 2.0*G_wz_riess_prior[1]*(x*y) + G_wz_riess_prior[3]*(y**2)
-
-	plt.contourf(x-1., y+0., z_riess_prior,  [1/f_2sig,1/f_1sig] , colors='crimson') #marginalized
-	plt.contourf(x-1., y+0., z_riess_prior,  [1/f_1sig,1/f_2sig] , colors='pink') #marginalized
-
-	proxy3 = mpatches.Circle((0.5, 0.5), 0.25, facecolor="crimson",edgecolor="pink", linewidth=3)
 
 	####################
-	plt.legend([ proxy3, proxy2, proxy1], [r'$40\%$ mass scatter w/ Riess et al 2016 $h$ prior', r'$40\%$ mass scatter',r'$80\%$ mass scatter' ],
-      handler_map={mpatches.Circle: HandlerEllipse()},frameon=False,loc='upper left')
+	plt.legend([ proxy3, proxy1, proxy2], [r'$40\%$ mass scatter + Riess et al 2016 $h$ prior ($N_{clus}=100$)', r'$80\%$ mass scatter ($N_{clus}=1000$)',r'$40\%$ mass scatter ($N_{clus}=1000$)' ],
+      handler_map={mpatches.Circle: HandlerEllipse()},frameon=False,loc='upper left',fontsize=14)
 
 	plt.xlabel('$w_0$',fontsize=20)
 	plt.ylabel('$w_a$',fontsize=20)
 
 	plt.xlim(-2,0)
-	plt.ylim(-3,3)
+	plt.ylim(-5,5)
 	plt.show()
 
 def plot_fig7_nonflat(plot):

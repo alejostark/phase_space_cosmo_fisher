@@ -799,18 +799,18 @@ def plot_derivatives_vary_w(z_c_array):
 """""""""""
 User input
 """""""""
-# cosmo_case = 'w_z' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
+cosmo_case = 'non_flat_riess_prior' #w_z, non_flat, flat, w_z_riess16_h, non_flat_riess_prior
 
 """specify redhsift range and Nclus"""
 # N_clus = 100 #number of clusters
-# redshift_array = np.linspace(0.001 , 0.8, N_clus).round(5) #uniform distribution
+# redshift_array = np.linspace(0.001 , 0.6, N_clus).round(5) #uniform distribution
 
 """specify cluster parameter uncertainties"""
-# prior_case = '40pct_none' #see cases in 'cluster_uncertainty_params' function
+# prior_case = '40pct_riess' #see cases in 'cluster_uncertainty_params' function
 # sigma_squared_list, cluster_edge_unc = cluster_uncertainty_params(prior_case)
 
 """calculate uncertainties"""
-# G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,cluster_edge_unc)
+# G_matrix_user_input = make_G_matrix(redshift_array, cosmo_case,sigma_squared_list,50)
 # plot_2d_contours_from_G(G_matrix_user_input,cosmo_case)
 
 
